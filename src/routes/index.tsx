@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { runZip, offlineScriptPreview, type RunResult } from "@/lib/zip-runner";
+import { runZip, offlineSimulation, type RunResult } from "@/lib/zip-runner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "ZipRunner" },
-      { name: "description", content: "ZIP rein, Ergebnis raus. Automatisches Entpacken und Ausführen." },
+      { name: "description", content: "ZIP rein, interaktive Vorschau raus." },
     ],
   }),
   component: Index,
@@ -26,37 +26,29 @@ function Index() {
     setView({ kind: "loading", label: "Entpacken…" });
     try {
       const result = await runZip(file);
-      if (result.kind === "script") {
-        setView({ kind: "loading", label: "Generiere Vorschau…" });
+      if (result.kind === "html") {
+        setView({ kind: "result", result, srcDoc: result.srcDoc });
+      } else if (result.kind === "simulate") {
+        setView({ kind: "loading", label: "Baue interaktive Vorschau…" });
         let html: string;
         try {
           const res = await fetch("/api/ai/preview", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              code: result.code,
-              language: result.language,
-              filename: result.mainName,
+              mainName: result.mainName,
+              fileKind: result.fileKind,
+              fileList: result.fileList,
+              textSamples: result.textSamples,
             }),
           });
           if (!res.ok) throw new Error("ai");
           html = await res.text();
           if (!/^<!?\s*doctype|<html/i.test(html.trim())) throw new Error("badhtml");
         } catch {
-          html = offlineScriptPreview(result.code, result.language, result.mainName);
+          html = offlineSimulation(result.mainName, result.fileKind, result.fileList);
         }
         setView({ kind: "result", result, srcDoc: html });
-      } else if (result.kind === "html") {
-        setView({ kind: "result", result, srcDoc: result.srcDoc });
-      } else if (result.kind === "download") {
-        // auto trigger download
-        const a = document.createElement("a");
-        a.href = result.url;
-        a.download = result.filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setView({ kind: "result", result });
       } else {
         setView({ kind: "result", result });
       }
@@ -66,9 +58,7 @@ function Index() {
   }, []);
 
   useEffect(() => {
-    const onDrag = (e: DragEvent) => {
-      e.preventDefault();
-    };
+    const onDrag = (e: DragEvent) => e.preventDefault();
     window.addEventListener("dragover", onDrag);
     window.addEventListener("drop", onDrag);
     return () => {
@@ -87,35 +77,16 @@ function Index() {
   const reset = () => setView({ kind: "idle" });
 
   if (view.kind === "result" && view.srcDoc) {
+    const name = view.result.kind === "empty" ? "" : view.result.mainName;
     return (
       <div className="flex h-screen w-screen flex-col bg-slate-950">
-        <Topbar name={view.result.kind === "empty" ? "" : view.result.mainName} onReset={reset} />
+        <Topbar name={name} onReset={reset} />
         <iframe
           title="Vorschau"
           srcDoc={view.srcDoc}
           className="h-full w-full flex-1 border-0 bg-white"
           sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"
         />
-      </div>
-    );
-  }
-
-  if (view.kind === "result" && view.result.kind === "download") {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-slate-100">
-        <Topbar name={view.result.filename} onReset={reset} />
-        <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <div className="mb-6 text-6xl">📦</div>
-          <h1 className="text-2xl font-semibold">{view.result.filename}</h1>
-          <p className="mt-2 text-sm text-slate-400">Download wurde gestartet.</p>
-          <a
-            href={view.result.url}
-            download={view.result.filename}
-            className="mt-6 inline-flex items-center justify-center rounded-lg bg-cyan-500 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
-          >
-            Erneut herunterladen
-          </a>
-        </div>
       </div>
     );
   }
@@ -157,7 +128,7 @@ function Index() {
         <p className="mt-3 max-w-md text-sm text-slate-400">
           {view.kind === "loading"
             ? view.label
-            : "ZIP hier ablegen oder klicken. Wir entpacken sie und zeigen dir das Ergebnis sofort."}
+            : "ZIP hier ablegen oder klicken. Du siehst sofort, wie es funktioniert — als interaktive Vorschau, kein Code."}
         </p>
         <input
           ref={inputRef}
