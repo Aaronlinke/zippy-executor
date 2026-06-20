@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
 
 type View =
   | { kind: "idle" }
-  | { kind: "loading"; label: string }
+  | { kind: "loading"; label: string; progress: number }
   | { kind: "result"; result: RunResult; srcDoc?: string };
 
 function Index() {
@@ -23,14 +23,14 @@ function Index() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(async (file: File) => {
-    setView({ kind: "loading", label: "Entpacken…" });
+    setView({ kind: "loading", label: "Entpacken…", progress: 5 });
     try {
       const result = await runZip(file);
       if (result.kind === "html") {
         setView({ kind: "result", result, srcDoc: result.srcDoc });
       } else if (result.kind === "simulate") {
-        setView({ kind: "loading", label: "Baue interaktive Vorschau…" });
-        let html: string;
+        setView({ kind: "loading", label: "Starte KI…", progress: 10 });
+        let html: string | null = null;
         try {
           const res = await fetch("/api/ai/preview", {
             method: "POST",
@@ -42,13 +42,36 @@ function Index() {
               textSamples: result.textSamples,
             }),
           });
-          if (!res.ok) throw new Error("ai");
-          html = await res.text();
-          if (!/^<!?\s*doctype|<html/i.test(html.trim())) throw new Error("badhtml");
+          if (!res.ok || !res.body) throw new Error("ai");
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, { stream: true });
+            const lines = buf.split("\n");
+            buf = lines.pop() ?? "";
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const ev = JSON.parse(line);
+                if (ev.type === "stage") {
+                  setView({ kind: "loading", label: ev.label, progress: ev.progress });
+                } else if (ev.type === "done" && typeof ev.html === "string") {
+                  html = ev.html;
+                }
+              } catch {
+                // ignore partial
+              }
+            }
+          }
+          if (!html || !/^<!?\s*doctype|<html/i.test(html.trim())) throw new Error("badhtml");
         } catch {
           html = offlineSimulation(result.mainName, result.fileKind, result.fileList);
         }
-        setView({ kind: "result", result, srcDoc: html });
+        setView({ kind: "result", result, srcDoc: html! });
       } else {
         setView({ kind: "result", result });
       }
