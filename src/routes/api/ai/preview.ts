@@ -14,13 +14,13 @@ const API_CATALOG = `Verfügbare öffentliche APIs (kein Key nötig, CORS erlaub
 WETTER & GEO
 - https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&current_weather=true
 - https://geocoding-api.open-meteo.com/v1/search?name=Berlin
-- https://ipapi.co/json/   (Standort des Nutzers)
+- https://ipapi.co/json/
 
 KRYPTO / BLOCKCHAIN
 - https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=eur,usd
 - https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20
-- https://blockchain.info/ticker            (BTC Kurse mehrerer Währungen)
-- https://mempool.space/api/v1/fees/recommended   (BTC Gebühren)
+- https://blockchain.info/ticker
+- https://mempool.space/api/v1/fees/recommended
 - https://api.coincap.io/v2/assets
 
 WÄHRUNGEN
@@ -33,9 +33,7 @@ DATEN / SPASS
 - https://dog.ceo/api/breeds/image/random
 - https://www.boredapi.com/api/activity
 - https://uselessfacts.jsph.pl/api/v2/facts/random
-- https://api.publicapis.org/entries
 - https://restcountries.com/v3.1/all
-- https://datausa.io/api/data?drilldowns=Nation&measures=Population
 
 NEWS
 - https://hn.algolia.com/api/v1/search?query=ai
@@ -43,76 +41,73 @@ NEWS
 
 KARTEN / BILDER
 - https://nominatim.openstreetmap.org/search?q=..&format=json
-- https://picsum.photos/seed/foo/600/400   (Bild direkt)
-- https://api.unsplash.com   (NUR wenn Nutzer eigenen Key einträgt)
+- https://picsum.photos/seed/foo/600/400
 
-REGEL: Wenn die App von Daten profitiert (Kurse, Wetter, News, Übersetzung, Krypto, Karten),
-binde EINE oder mehrere passende APIs LIVE ein. Niemals fake-data, wenn eine API existiert.`;
+REGEL: Wenn die App von Daten profitiert, binde passende APIs LIVE ein. Niemals fake-data, wenn eine API existiert.`;
 
-const SYSTEM_BUILD = `Du bist ein Senior-Web-Engineer. Eingabe: Metadaten und Auszüge einer ZIP
-(Skript, App, APK, EXE, JAR, Python, JS, …).
-
-Aufgabe: Baue eine **vollwertige, echt funktionierende Web-Version** des Programms —
-keine Simulation, keine Attrappe, kein Mockup-Text. Wenn das Original etwas berechnet,
-muss deine Version es ebenfalls berechnen. Wenn es Daten verwaltet, muss deine Version
-Daten verwalten (im Speicher / localStorage). Wenn es ein Spiel ist, muss man es spielen
-können. Ziel: so gut wie das Original — wenn möglich besser.
+const ALPHA_SYSTEM = `Du bist ALPHA — Senior-Web-Engineer. Baue aus ZIP-Metadaten eine **echte, voll funktionsfähige Web-Version** des Programms.
 
 Strenge Regeln:
-- Liefere EINE einzige eigenständige HTML-Datei mit inline CSS und JS. Keine externen
-  Skripte, keine CDN-Imports — alles inline und offline lauffähig im Browser.
-- Echte Kern-Logik in JavaScript. Keine "TODO"-Stubs, keine Platzhalter-Buttons,
-  keine Fake-Daten-Demos. Alle Buttons müssen wirklich was tun.
-- Wenn die App von Live-Daten lebt (Kurse, Wetter, Krypto, News, Geo, Übersetzung):
-  binde passende öffentliche APIs aus dem Katalog per fetch() direkt ein — mit
-  Ladeindikator, try/catch und sauberem Fehler-Hinweis bei Offline.
-- Übersetze Python/Java/C/Kotlin-Logik portabel nach JavaScript. Web-APIs statt
-  nativer Bibliotheken (Canvas, Audio, localStorage, FileReader).
-- Bei APK/EXE/JAR/IPA ohne Quellcode: leite aus Manifest, Dateinamen, README den
-  Zweck ab und baue eine voll funktionsfähige Web-App, die diesen Zweck erfüllt.
-- KEIN Quellcode für den Nutzer sichtbar. Nur die fertige App.
-- Modernes, dunkles UI (Slate/Cyan), responsive, sauber, ohne Erklärtexte.
+- Eine einzige HTML-Datei, inline CSS+JS, keine externen Skripte/CDNs.
+- ECHTE Logik, keine Stubs, keine TODOs, keine fake-data.
+- JEDER sichtbare Knopf, jedes Input-Feld muss verkabelt sein und etwas tun.
+- Bei Bedarf passende APIs aus dem Katalog per fetch() (mit try/catch + Loading).
+- Übersetze Python/Java/C/Kotlin portabel nach JavaScript + Web-APIs.
+- Bei APK/EXE/JAR ohne Quellcode: leite Zweck aus Manifest/README/Namen ab und baue eine voll funktionsfähige App.
+- KEIN Quellcode für Endnutzer sichtbar.
+- Dunkles Slate/Cyan-UI, responsive, ohne Erklärtexte.
 
 ${API_CATALOG}
 
-Antworte AUSSCHLIESSLICH mit vollständigem HTML, beginnend mit <!doctype html>.
-Kein Markdown, keine Code-Fences, keine Erklärung davor oder danach.`;
+Antwort: NUR vollständiges HTML ab <!doctype html>. Kein Markdown, keine Fences.`;
 
-const SYSTEM_CRITIC = `Du bist ein knallharter Senior-Code-Reviewer. Du bekommst eine HTML-App,
-die ein anderes Modell aus einer ZIP-Datei gebaut hat. Finde die Schwächen.
+const BETA_SYSTEM = `Du bist BETA — knallharter Code-Reviewer. Du bekommst eine HTML-App von ALPHA.
 
-Prüfe konkret:
-1. Hat die App ECHTE Logik oder nur Demo/Stubs? Liste tote Buttons, fake-Werte, fehlende Berechnungen.
-2. Funktionieren alle Eingaben, Forms, Tasten?
-3. Wo wären Live-APIs sinnvoll, fehlen aber? (Wetter, Krypto, Kurse, Geo, News, Blockchain …)
-4. CORS-Probleme bei den verwendeten APIs?
-5. Fehlerbehandlung (try/catch, Loading-States, Offline-Fallback)?
-6. UI/UX: konsistentes dunkles Theme, responsive, lesbar?
-7. Security: keine externen Skripte, kein eval mit user-input, sauberes Escaping.
-8. Edge Cases: leere Eingabe, große Eingabe, ungültige Eingabe.
+Liste KONKRET und UMSETZBAR:
+1. Jeden toten Knopf / nicht verkabeltes Input.
+2. Jeden Platzhalter / fake-Wert / TODO / Stub.
+3. Fehlende oder falsche Berechnungs-Logik gemessen am Original-Zweck.
+4. Fehlende Live-APIs, wo Daten gebraucht werden (Krypto, Wetter, Geo, News …).
+5. Fehlende try/catch, Loading-States, Edge Cases (leer/groß/ungültig).
+6. UI/UX-Mängel (Kontrast, Mobile, Responsiveness).
+7. Sicherheits-Probleme (eval mit user-input, fehlendes Escaping).
 
-Antworte als kurze, knackige Bullet-Liste mit konkreten, umsetzbaren Verbesserungen.
-KEIN Lob, KEIN HTML, KEINE Code-Blöcke — nur die Mängel-Liste.`;
+Antwort: knappe Bullet-Liste, KEIN Lob, KEIN HTML. Maximal 20 Punkte, sortiert nach Priorität.`;
 
-const SYSTEM_REFINE = `Du bist Senior-Web-Engineer. Du bekommst eine HTML-App und eine
-Mängel-Liste eines Reviewers. Liefere eine VERBESSERTE Version, die alle genannten
-Punkte behebt. Behalte alles, was gut war.
+const GAMMA_SYSTEM = `Du bist GAMMA — Senior-Web-Engineer. Du bekommst die Alpha-App und die Beta-Mängel-Liste.
+Liefere eine VERBESSERTE Version, die JEDEN Punkt behebt.
 
-Strenge Regeln (gelten unverändert weiter):
-- Eine einzige eigenständige HTML-Datei, inline CSS+JS, keine externen Skripte.
-- Echte Logik in JS, keine Stubs, keine fake-data.
-- Wo nützlich, echte öffentliche APIs per fetch() (siehe Katalog).
-- Dunkles, modernes UI (Slate/Cyan), responsive, ohne Erklärtexte.
+Regeln (unverändert):
+- Eine HTML-Datei, inline CSS+JS, keine externen Skripte.
+- Echte Logik, jeder Knopf verkabelt, keine Stubs.
+- Passende APIs aus dem Katalog wo sinnvoll.
+- Dunkles Slate/Cyan-UI, responsive.
 
 ${API_CATALOG}
 
-Antworte AUSSCHLIESSLICH mit vollständigem HTML, beginnend mit <!doctype html>.
-Kein Markdown, keine Code-Fences, keine Erklärung.`;
+Antwort: NUR vollständiges HTML ab <!doctype html>.`;
+
+const DELTA_SYSTEM = `Du bist DELTA — Final-QA-Engineer. Letzter Durchgang vor Auslieferung.
+Du bekommst die Gamma-Version. Prüfe und KORRIGIERE direkt im Code:
+
+Checkliste — alles MUSS true sein in der Ausgabe:
+[ ] Jeder <button>, <a>, <input>, <select>, <form> hat einen funktionierenden Handler.
+[ ] Keine leeren onclick="", keine "alert('TODO')", keine Platzhalter.
+[ ] Alle berechenbaren Werte werden wirklich aus Inputs berechnet.
+[ ] Jeder fetch() hat try/catch und einen sichtbaren Lade-/Fehlerstatus.
+[ ] App startet in einem sinnvollen Initialzustand (Demo-Daten geladen wenn passend).
+[ ] Responsive bis 360px Breite.
+[ ] Keine externen Skripte/Styles, alles inline.
+
+Liefere die FERTIGE 100%-Version.
+
+${API_CATALOG}
+
+Antwort: NUR vollständiges HTML ab <!doctype html>.`;
 
 function stripFences(s: string) {
   return s.replace(/^```(?:html)?\s*/i, "").replace(/```\s*$/i, "").trim();
 }
-
 function isHtml(s: string) {
   return /<html|<!doctype/i.test(s);
 }
@@ -139,63 +134,90 @@ Typ: ${fileKind ?? "unbekannt"}
 Dateiliste (${fileList?.length ?? 0}):
 ${(fileList ?? []).slice(0, 60).join("\n")}
 
-Inhalts-Auszüge aus der ZIP (Quellcode, README, Manifest):
-${samples || "(keine Textdateien gefunden — leite aus Typ und Namen die plausibelste voll funktionsfähige App ab)"}
+Inhalts-Auszüge:
+${samples || "(keine Textdateien — leite aus Typ und Namen die plausibelste voll funktionsfähige App ab)"}
 
-Baue jetzt die voll funktionsfähige Web-Version. Echte Logik, echte APIs wenn passend.`;
+Baue jetzt die voll funktionsfähige Web-Version.`;
 
-        try {
-          const gateway = createLovableAiGatewayProvider(key);
-          const model = gateway("google/gemini-3-flash-preview");
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          async start(controller) {
+            const send = (obj: unknown) =>
+              controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
 
-          // PASS 1: Build
-          const first = await generateText({
-            model,
-            system: SYSTEM_BUILD,
-            prompt: buildPrompt,
-            maxOutputTokens: 16000,
-          });
-          let html = stripFences(first.text);
-          if (!isHtml(html)) return new Response("ai_bad_html", { status: 502 });
+            try {
+              const gateway = createLovableAiGatewayProvider(key);
+              const model = gateway("google/gemini-3-flash-preview");
 
-          // PASS 2: Critic + Refine (best-effort, fall back to v1 if it fails)
-          try {
-            const critique = await generateText({
-              model,
-              system: SYSTEM_CRITIC,
-              prompt: `Ursprungs-Programm: ${mainName} (${fileKind ?? "unbekannt"}).
+              // ALPHA
+              send({ type: "stage", id: "alpha", label: "Alpha · Erstentwurf", progress: 15 });
+              const alpha = await generateText({
+                model,
+                system: ALPHA_SYSTEM,
+                prompt: buildPrompt,
+                maxOutputTokens: 16000,
+              });
+              let html = stripFences(alpha.text);
+              if (!isHtml(html)) {
+                send({ type: "error", message: "alpha_bad_html" });
+                controller.close();
+                return;
+              }
+              send({ type: "stage", id: "alpha", label: "Alpha · fertig", progress: 35 });
 
-Gebaute App:
-${html.slice(0, 30000)}
+              // BETA
+              try {
+                send({ type: "stage", id: "beta", label: "Beta · Code-Review", progress: 50 });
+                const beta = await generateText({
+                  model,
+                  system: BETA_SYSTEM,
+                  prompt: `Programm: ${mainName} (${fileKind ?? "unbekannt"})\n\nApp:\n${html.slice(0, 30000)}`,
+                  maxOutputTokens: 2500,
+                });
+                const critique = beta.text;
 
-Liste die konkreten Mängel und Verbesserungen.`,
-              maxOutputTokens: 2000,
-            });
+                // GAMMA
+                send({ type: "stage", id: "gamma", label: "Gamma · Verbesserung", progress: 70 });
+                const gamma = await generateText({
+                  model,
+                  system: GAMMA_SYSTEM,
+                  prompt: `Programm: ${mainName}\n\nAktuelle App:\n${html}\n\nBeta-Mängel:\n${critique}\n\nLiefere die verbesserte HTML-Datei.`,
+                  maxOutputTokens: 16000,
+                });
+                const gammaHtml = stripFences(gamma.text);
+                if (isHtml(gammaHtml)) html = gammaHtml;
 
-            const refined = await generateText({
-              model,
-              system: SYSTEM_REFINE,
-              prompt: `Ursprungs-Programm: ${mainName} (${fileKind ?? "unbekannt"}).
+                // DELTA — Endprüfung
+                send({ type: "stage", id: "delta", label: "Delta · Endprüfung", progress: 88 });
+                const delta = await generateText({
+                  model,
+                  system: DELTA_SYSTEM,
+                  prompt: `Programm: ${mainName}\n\nGamma-Version:\n${html}\n\nFühre die Final-QA-Checkliste aus und liefere die 100%-Version.`,
+                  maxOutputTokens: 16000,
+                });
+                const deltaHtml = stripFences(delta.text);
+                if (isHtml(deltaHtml)) html = deltaHtml;
+              } catch {
+                // Verbesserungs-Passes optional — Alpha bleibt
+              }
 
-Aktuelle App:
-${html}
+              send({ type: "stage", id: "done", label: "Fertig", progress: 100 });
+              send({ type: "done", html });
+              controller.close();
+            } catch {
+              send({ type: "error", message: "ai_error" });
+              controller.close();
+            }
+          },
+        });
 
-Mängel-Liste des Reviewers:
-${critique.text}
-
-Liefere die verbesserte vollständige HTML-Datei.`,
-              maxOutputTokens: 16000,
-            });
-            const refinedHtml = stripFences(refined.text);
-            if (isHtml(refinedHtml)) html = refinedHtml;
-          } catch {
-            // keep v1
-          }
-
-          return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
-        } catch {
-          return new Response("ai_error", { status: 502 });
-        }
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "application/x-ndjson; charset=utf-8",
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+          },
+        });
       },
     },
   },
