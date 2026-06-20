@@ -78,9 +78,21 @@ function Index() {
 
   if (view.kind === "result" && view.srcDoc) {
     const name = view.result.kind === "empty" ? "" : view.result.mainName;
+    const downloadName = (name.split("/").pop() || "app").replace(/\.[^.]+$/, "") + ".html";
+    const onDownload = () => {
+      const blob = new Blob([view.srcDoc!], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = downloadName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
     return (
       <div className="flex h-screen w-screen flex-col bg-slate-950">
-        <Topbar name={name} onReset={reset} />
+        <Topbar name={name} onReset={reset} onDownload={onDownload} />
         <iframe
           title="Vorschau"
           srcDoc={view.srcDoc}
@@ -145,19 +157,37 @@ function Index() {
   );
 }
 
-function Topbar({ name, onReset }: { name: string; onReset: () => void }) {
+function Topbar({
+  name,
+  onReset,
+  onDownload,
+}: {
+  name: string;
+  onReset: () => void;
+  onDownload?: () => void;
+}) {
   return (
     <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-2">
       <div className="flex items-center gap-2 text-xs text-slate-400">
         <span className="font-semibold text-cyan-400">ZipRunner</span>
         {name && <span className="truncate">· {name}</span>}
       </div>
-      <button
-        onClick={onReset}
-        className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-700"
-      >
-        Neue ZIP
-      </button>
+      <div className="flex items-center gap-2">
+        {onDownload && (
+          <button
+            onClick={onDownload}
+            className="rounded-md bg-cyan-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-400"
+          >
+            ↓ HTML
+          </button>
+        )}
+        <button
+          onClick={onReset}
+          className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-slate-700"
+        >
+          Neue ZIP
+        </button>
+      </div>
     </div>
   );
 }
