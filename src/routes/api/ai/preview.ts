@@ -62,16 +62,24 @@ Typ: ${fileKind ?? "unbekannt"}
 Dateiliste (${fileList?.length ?? 0}):
 ${(fileList ?? []).slice(0, 60).join("\n")}
 
-Inhalts-Auszüge (zur Inspiration für die simulierte UI):
-${samples || "(keine Textdateien gefunden — erfinde eine plausible UI passend zum Typ und Namen)"}
+Inhalts-Auszüge aus der ZIP (Quellcode, README, Manifest — als Vorlage für die echte Logik):
+${samples || "(keine Textdateien gefunden — leite aus Typ und Namen die plausibelste voll funktionsfähige App ab)"}
 
-Bitte: erzeuge die interaktive Simulation.`;
+Baue jetzt die voll funktionsfähige Web-Version. Keine Demo, keine Stubs — echte Logik in JS.`;
 
         try {
           const gateway = createLovableAiGatewayProvider(key);
           const model = gateway("google/gemini-3-flash-preview");
-          const { text } = await generateText({ model, system: SYSTEM, prompt });
+          const { text } = await generateText({
+            model,
+            system: SYSTEM,
+            prompt,
+            maxOutputTokens: 16000,
+          });
           const html = stripFences(text);
+          if (!/<html|<!doctype/i.test(html)) {
+            return new Response("ai_bad_html", { status: 502 });
+          }
           return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
         } catch {
           return new Response("ai_error", { status: 502 });
